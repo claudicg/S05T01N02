@@ -9,5 +9,4 @@ public class Validations {
 	public static boolean isValidNumber(String id) {
 		return id.matches("^[1-9]{1}[0-9]*$");
 	}
-	
 }

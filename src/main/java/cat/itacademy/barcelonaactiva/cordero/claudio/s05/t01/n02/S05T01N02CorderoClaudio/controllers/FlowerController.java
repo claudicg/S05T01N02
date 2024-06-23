@@ -15,13 +15,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.exceptions.InvalidNameException;
+import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.exceptions.NotFoundException;
 import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.model.dto.FlowerAddRequestDTO;
 import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.model.dto.FlowerDTO;
-import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.model.dto.FlowerResponseDTO;
 import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.model.dto.FlowerUpdateRequestDTO;
 import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.model.services.FlowerService;
 import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.utils.Constants;
-import cat.itacademy.barcelonaactiva.cordero.claudio.s05.t01.n02.S05T01N02CorderoClaudio.utils.Validations;
+
 
 @RestController
 public class FlowerController {
@@ -31,108 +32,43 @@ public class FlowerController {
 	
 	private static Logger logger = LoggerFactory.getLogger(FlowerController.class);
 	
+	
 	@PostMapping("/flowers/add")
-	public ResponseEntity<FlowerResponseDTO> add(@RequestBody FlowerAddRequestDTO flowerAddRequestDto){
+	public ResponseEntity<FlowerDTO> add(@RequestBody FlowerAddRequestDTO flowerAddRequestDto) throws InvalidNameException{
 		
-		if(!Validations.isValidName(flowerAddRequestDto.getFlowerName().trim())) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setError(Constants.Messages.INVALID_NAME);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		logger.info("FlowerController :: add :: Add a flower.");
 		
-		if(!Validations.isValidName(flowerAddRequestDto.getFlowerCountry().trim())) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setError(Constants.Messages.INVALID_COUNTRY);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-		
-		FlowerDTO flowerDto = flowerService.add(flowerAddRequestDto.getFlowerName().trim(), flowerAddRequestDto.getFlowerCountry().trim());
-		
-		if(flowerDto != null) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setMessage(Constants.Messages.ADDED);
-			response.setFlower(flowerDto);
-			logger.info("FlowerController :: add :: Flower was added correctly.");
-			return ResponseEntity.status(HttpStatus.OK).body(response);
-		}else {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setError(Constants.Messages.ERROR_INSERT);
-			logger.info("FlowerController :: add :: Error trying to insert flower.");
-			return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(response);
-		}
+		return ResponseEntity.status(HttpStatus.OK).body(flowerService.add(flowerAddRequestDto));
 	}
 	
+	
 	@PutMapping("/flowers/update")
-    public ResponseEntity<FlowerResponseDTO> update(@RequestBody FlowerUpdateRequestDTO flowerUpdateDto){
+    public ResponseEntity<FlowerDTO> update(@RequestBody FlowerUpdateRequestDTO flowerUpdateDto) throws NotFoundException, InvalidNameException{
 		
-		if(!Validations.isValidNumber(Integer.toString(flowerUpdateDto.getFlowerId()))) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setError(Constants.Messages.INVALID_ID);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		logger.info("FlowerController :: update :: Update a flower.");
 		
-		if(!Validations.isValidName(flowerUpdateDto.getFlowerName().trim())) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setError(Constants.Messages.INVALID_NAME);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-		
-		FlowerDTO flowerDto = flowerService.update(flowerUpdateDto.getFlowerId(), flowerUpdateDto.getFlowerName().trim(), flowerUpdateDto.getFlowerCountry().trim());
-		
-		if(flowerDto != null) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setMessage(Constants.Messages.UPDATED);
-			response.setFlower(flowerDto);
-			logger.info("FlowerController :: update :: Flower was updated correctly.");
-			return ResponseEntity.status(HttpStatus.OK).body(response);
-		}else {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setError(Constants.Messages.INVALID_COUNTRY);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		return ResponseEntity.status(HttpStatus.OK).body(flowerService.update(flowerUpdateDto));
 		
 	}
 	
 	@DeleteMapping("/flowers/delete/{id}")
-	public ResponseEntity<FlowerResponseDTO> delete(@PathVariable int id) {
+	public ResponseEntity<String> delete(@PathVariable int id) throws InvalidNameException, NotFoundException {
 		
-		
-		if(!Validations.isValidNumber(Integer.toString(id))) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setError(Constants.Messages.INVALID_ID);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		logger.info("FlowerController :: delete :: Delete a flower.");
 		
 		flowerService.delete(id);
 		
-	    FlowerResponseDTO response = new FlowerResponseDTO();
-	    response.setMessage(Constants.Messages.DELETED);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(Constants.Messages.DELETED);
 
 	}
 	
 	@GetMapping("/flowers/getOne/{id}")
-	public ResponseEntity<FlowerResponseDTO> getOne(@PathVariable int id){
+	public ResponseEntity<FlowerDTO> getOne(@PathVariable int id) throws InvalidNameException, NotFoundException{
 		
-		if(!Validations.isValidNumber(Integer.toString(id))) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setError(Constants.Messages.INVALID_ID);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		logger.info("FlowerController :: getOne :: Find a flower.");
 		
-		FlowerDTO flowerDto = flowerService.getOne(id);
+		return ResponseEntity.status(HttpStatus.OK).body(flowerService.getOne(id));
 		
-		if(flowerDto != null) {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setMessage(Constants.Messages.FOUND);
-			response.setFlower(flowerDto);
-			return ResponseEntity.status(HttpStatus.OK).body(response);
-		}else {
-			FlowerResponseDTO response = new FlowerResponseDTO();
-			response.setMessage(Constants.Messages.NOT_FOUND);
-			response.setFlower(flowerDto); //FlowerDto is null.
-			return ResponseEntity.status(HttpStatus.OK).body(response);
-		}
 	}
 	
 	@GetMapping("/flowers/getAll")
